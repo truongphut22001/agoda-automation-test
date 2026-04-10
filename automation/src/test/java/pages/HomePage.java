@@ -87,7 +87,6 @@ public class HomePage {
             occupancyBox.click();
 
             wait.until(ExpectedConditions.visibilityOfElementLocated(popupLocator));
-
             System.out.println("Popup was CLOSED → now OPENED");
         } else {
             System.out.println("Popup already OPEN");
@@ -124,16 +123,6 @@ public class HomePage {
 
     public void clickSearch() {
         driver.findElement(searchButton).click();
-    }
-
-    private void clickPlus(By plusBtn, int times) {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
-        WebElement btn = wait.until(ExpectedConditions.elementToBeClickable(plusBtn));
-
-        for (int i = 0; i < times; i++) {
-            btn.click();
-        }
     }
 
     private int getValue(By locator) {
@@ -176,36 +165,6 @@ public class HomePage {
         Random rand = new Random();
         WebElement randomOption = options.get(rand.nextInt(options.size()));
         randomOption.click();
-    }
-
-    public void handleChildAgeWarningIfPresent() {
-        By warningLocator = By.cssSelector("[data-selenium='childAgeWarning']");
-        By occupancyBoxLocator = By.cssSelector("[data-element-name='occupancy-box']");
-
-        try {
-            // chờ tối đa 3s xem warning có xuất hiện không
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(3));
-
-            WebElement warning = shortWait.until(
-                    ExpectedConditions.visibilityOfElementLocated(warningLocator)
-            );
-
-            if (warning.isDisplayed()) {
-                System.out.println("Warning appeared → handling it");
-
-                WebElement occupancyBox = wait.until(
-                        ExpectedConditions.elementToBeClickable(occupancyBoxLocator)
-                );
-
-                occupancyBox.click(); // đóng
-
-                wait.until(ExpectedConditions.invisibilityOfElementLocated(warningLocator));
-            }
-
-        } catch (TimeoutException e) {
-            // Không có warning xuất hiện → bỏ qua
-            System.out.println("No child age warning");
-        }
     }
 
 }
