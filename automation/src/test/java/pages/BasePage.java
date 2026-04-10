@@ -28,15 +28,12 @@ public class BasePage {
     }
 
     protected void type(By locator, String text) {
-        waitForVisible(locator).clear();
-        waitForVisible(locator).sendKeys(text);
+        WebElement element = waitForVisible(locator);
+        element.clear();
+        element.sendKeys(text);
     }
 
     protected String getText(By locator) {
         return waitForVisible(locator).getText();
-    }
-
-    protected boolean isDisplayed(By locator) {
-        return waitForVisible(locator).isDisplayed();
     }
 }

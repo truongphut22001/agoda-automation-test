@@ -1,19 +1,20 @@
 package pages;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import java.util.List;
 import java.util.Objects;
 
-public class HotelPage {
+public class HotelPage extends BasePage {
 
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+    private final By priceContainer = By.cssSelector(
+            "div[data-element-name='cheapest-room-price-property-nav-bar']"
+    );
 
     public HotelPage(WebDriver driver, WebDriverWait wait) {
-        this.driver = driver;
-        this.wait = wait;
+        super(driver, wait);
     }
 
     public boolean isPriceDisplayed() {

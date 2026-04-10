@@ -8,163 +8,131 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Random;
+import java.util.logging.Logger;
 
-public class HomePage {
-    private final WebDriver driver;
-    private final WebDriverWait wait;
-    private final By searchBox = By.id("textInput");
+public class HomePage extends BasePage {
+
+    private static final Logger logger = Logger.getLogger(HomePage.class.getName());
+    private static final String BASE_URL = "https://www.agoda.com/";
+
+    private final By searchBox    = By.id("textInput");
     private final By searchButton = By.cssSelector("[data-element-name='search-button']");
+
     public HomePage(WebDriver driver, WebDriverWait wait) {
-        this.driver = driver;
-        this.wait = wait;
+        super(driver, wait);
     }
 
     public void open() {
-        driver.get("https://www.agoda.com/");
+        driver.get(BASE_URL);
     }
 
     public void enterHotel(String hotelName) {
-        WebElement input = wait.until(ExpectedConditions.visibilityOfElementLocated(searchBox));
+        WebElement input = waitForVisible(searchBox);
         input.clear();
         input.sendKeys(hotelName);
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-        WebElement firstSuggestion = wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector("li[data-testid='topDestinationListItem'][data-element-index='0']")
-        ));
+
+        WebElement firstSuggestion = waitForClickable(
+                By.cssSelector("li[data-element-name='search-box-sub-suggestion'][data-element-index='0']")
+        );
         firstSuggestion.click();
     }
 
     public void selectDates(LocalDate checkIn, LocalDate checkOut) {
         WebElement checkInBox = driver.findElement(By.id("check-in-box"));
-
         String expanded = checkInBox.getAttribute("aria-expanded");
 
-        if ("true".equals(expanded)) {
-            System.out.println("Calendar is OPEN");
-
+        if (!"true".equals(expanded)) {
+            logger.info("Calendar is CLOSED → opening");
+            click(By.cssSelector("div[data-selenium='checkInBox']"));
         } else {
-            System.out.println("Calendar is CLOSED");
-            driver.findElement(By.cssSelector("div[data-selenium='checkInBox']")).click();
+            logger.info("Calendar is already OPEN");
         }
-        By checkInDateLocator = By.cssSelector("[data-selenium-date='" + checkIn.toString() + "']");
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
 
-        WebElement checkInDateElement = wait.until(
-                ExpectedConditions.elementToBeClickable(checkInDateLocator)
-        );
-        checkInDateElement.click();
+        By checkInLocator  = By.cssSelector("[data-selenium-date='" + checkIn  + "']");
+        By checkOutLocator = By.cssSelector("[data-selenium-date='" + checkOut + "']");
 
-        By checkOutDateLocator = By.cssSelector("[data-selenium-date='" + checkOut.toString() + "']");
-
-        WebElement checkOutDateElement = wait.until(
-                ExpectedConditions.elementToBeClickable(checkOutDateLocator)
-        );
-        checkOutDateElement.click();
+        click(checkInLocator);
+        click(checkOutLocator);
     }
 
-    public void setRoomOptions(int room, int adults, int children) {
+    public void setRoomOptions(int rooms, int adults, int children) {
         By popupLocator = By.cssSelector("[data-selenium='occupancyPicker']");
 
         boolean isPopupVisible = false;
         try {
-            WebDriverWait shortWait = new WebDriverWait(driver, Duration.ofSeconds(5));
-            shortWait.until(ExpectedConditions.visibilityOfElementLocated(popupLocator));
+            waitForVisible(popupLocator);
             isPopupVisible = true;
         } catch (TimeoutException e) {
             isPopupVisible = false;
         }
 
         if (!isPopupVisible) {
-            WebElement occupancyBox = wait.until(
-                    ExpectedConditions.elementToBeClickable(
-                            By.cssSelector("[data-element-name='occupancy-box']")
-                    )
-            );
-            occupancyBox.click();
-
-            wait.until(ExpectedConditions.visibilityOfElementLocated(popupLocator));
-            System.out.println("Popup was CLOSED → now OPENED");
+            logger.info("Occupancy popup CLOSED → opening");
+            click(By.cssSelector("[data-element-name='occupancy-box']"));
+            waitForVisible(popupLocator);
         } else {
-            System.out.println("Popup already OPEN");
+            logger.info("Occupancy popup already OPEN");
         }
 
-        By roomValue = By.cssSelector("[data-selenium='desktop-occ-room-value'] p");
-        By adultValue = By.cssSelector("[data-selenium='desktop-occ-adult-value'] p");
+        By roomValue     = By.cssSelector("[data-selenium='desktop-occ-room-value'] p");
+        By adultValue    = By.cssSelector("[data-selenium='desktop-occ-adult-value'] p");
         By childrenValue = By.cssSelector("[data-selenium='desktop-occ-children-value'] p");
 
-        By roomPlus = By.cssSelector("[data-selenium='occupancyRooms'] [data-selenium='plus']");
+        By roomPlus  = By.cssSelector("[data-selenium='occupancyRooms'] [data-selenium='plus']");
         By roomMinus = By.cssSelector("[data-selenium='occupancyRooms'] [data-selenium='minus']");
-
         By adultPlus = By.cssSelector("[data-selenium='occupancyAdults'] [data-selenium='plus']");
-        By adultMinus = By.cssSelector("[data-selenium='occupancyAdults'] [data-selenium='minus']");
+        By adultMinus= By.cssSelector("[data-selenium='occupancyAdults'] [data-selenium='minus']");
+        By childPlus = By.cssSelector("[data-selenium='occupancyChildren'] [data-selenium='plus']");
+        By childMinus= By.cssSelector("[data-selenium='occupancyChildren'] [data-selenium='minus']");
 
-        By childrenPlus = By.cssSelector("[data-selenium='occupancyChildren'] [data-selenium='plus']");
-        By childrenMinus = By.cssSelector("[data-selenium='occupancyChildren'] [data-selenium='minus']");
+        setValue(roomValue,     roomPlus,  roomMinus,  rooms);
+        setValue(adultValue,    adultPlus, adultMinus, adults);
+        setValue(childrenValue, childPlus, childMinus, children);
 
-        setValue(roomValue, roomPlus, roomMinus, room);
-        setValue(adultValue, adultPlus, adultMinus, adults);
-        setValue(childrenValue, childrenPlus, childrenMinus, children);
-        selectRandomChildAge();
+        if (children > 0) {
+            selectRandomChildAge();
+        }
 
-        Assert.assertEquals(getValue(roomValue), 1);
-        Assert.assertEquals(getValue(adultValue), 4);
-        Assert.assertEquals(getValue(childrenValue), 2);
+        Assert.assertEquals(getValue(roomValue),     rooms,    "Room count mismatch");
+        Assert.assertEquals(getValue(adultValue),    adults,   "Adult count mismatch");
+        Assert.assertEquals(getValue(childrenValue), children, "Children count mismatch");
 
-        WebElement occupancyBox = wait.until(
-                ExpectedConditions.elementToBeClickable(By.id("occupancy-box"))
-        );
-
-        occupancyBox.click();
+        click(By.id("occupancy-box"));
     }
 
     public void clickSearch() {
-        driver.findElement(searchButton).click();
+        click(searchButton);
     }
+
+    // ── Private helpers ────────────────────────────────────────────────────────
 
     private int getValue(By locator) {
         return Integer.parseInt(driver.findElement(locator).getText().trim());
     }
 
     private void setValue(By valueLocator, By plusBtn, By minusBtn, int target) {
-
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(10));
-
         int current = getValue(valueLocator);
-        int diff = target - current;
+        int diff    = target - current;
 
         if (diff > 0) {
-            WebElement plus = wait.until(ExpectedConditions.elementToBeClickable(plusBtn));
-            for (int i = 0; i < diff; i++) {
-                plus.click();
-            }
+            WebElement plus = waitForClickable(plusBtn);
+            for (int i = 0; i < diff; i++) plus.click();
         } else if (diff < 0) {
-            WebElement minus = wait.until(ExpectedConditions.elementToBeClickable(minusBtn));
-            for (int i = 0; i < Math.abs(diff); i++) {
-                minus.click();
-            }
+            WebElement minus = waitForClickable(minusBtn);
+            for (int i = 0; i < Math.abs(diff); i++) minus.click();
         }
     }
 
-    public void selectRandomChildAge() {
-        // Mở dropdown
-        WebElement dropdown = wait.until(ExpectedConditions.elementToBeClickable(
-                By.cssSelector("button[data-element-name='occ-child-age-dropdown']")
-        ));
-        dropdown.click();
-
-        // Lấy tất cả option trong listbox
-        List<WebElement> options = wait.until(ExpectedConditions.visibilityOfAllElementsLocatedBy(
-                By.cssSelector("ul[role='listbox'] li")
-        ));
-
-        // Chọn random 1 option
-        Random rand = new Random();
-        WebElement randomOption = options.get(rand.nextInt(options.size()));
-        randomOption.click();
+    private void selectRandomChildAge() {
+        click(By.cssSelector("button[data-element-name='occ-child-age-dropdown']"));
+        List<WebElement> options = wait.until(
+                ExpectedConditions.visibilityOfAllElementsLocatedBy(
+                        By.cssSelector("ul[role='listbox'] li")
+                )
+        );
+        options.get(new Random().nextInt(options.size())).click();
     }
-
 }
