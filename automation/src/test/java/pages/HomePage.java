@@ -35,7 +35,7 @@ public class HomePage extends BasePage {
         input.sendKeys(hotelName);
 
         WebElement firstSuggestion = waitForClickable(
-                By.cssSelector("li[data-testid='topDestinationListItem'][data-element-index='0']")
+                By.cssSelector("li[data-element-name='search-box-sub-suggestion'][data-element-index='0']")
         );
         firstSuggestion.click();
     }

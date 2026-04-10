@@ -34,21 +34,12 @@ public class SearchResultPage extends BasePage {
             click(occupancyBox);
         }
 
-        String originalWindow = driver.getWindowHandle();
-        int tabsBefore = driver.getWindowHandles().size();
-
         WebElement firstHotelLink = waitForClickable(hotelLink);
         ((JavascriptExecutor) driver).executeScript(
                 "arguments[0].scrollIntoView({block: 'center'});", firstHotelLink
         );
-        firstHotelLink.click();
 
-        wait.until(d -> d.getWindowHandles().size() > tabsBefore);
-        for (String handle : driver.getWindowHandles()) {
-            if (!handle.equals(originalWindow)) {
-                driver.switchTo().window(handle);
-                return;
-            }
-        }
+        String hotelUrl = firstHotelLink.getAttribute("href");
+        driver.get(hotelUrl);
     }
 }
