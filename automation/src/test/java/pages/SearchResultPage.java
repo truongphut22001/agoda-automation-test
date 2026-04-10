@@ -43,7 +43,6 @@ public class SearchResultPage extends BasePage {
         );
         firstHotelLink.click();
 
-        // Chờ tab mới xuất hiện rồi switch sang
         wait.until(d -> d.getWindowHandles().size() > tabsBefore);
         for (String handle : driver.getWindowHandles()) {
             if (!handle.equals(originalWindow)) {

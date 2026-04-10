@@ -34,7 +34,6 @@ public class HomePage extends BasePage {
         input.clear();
         input.sendKeys(hotelName);
 
-        // Dùng wait instance từ BasePage — không tạo mới
         WebElement firstSuggestion = waitForClickable(
                 By.cssSelector("li[data-testid='topDestinationListItem'][data-element-index='0']")
         );
@@ -52,7 +51,6 @@ public class HomePage extends BasePage {
             logger.info("Calendar is already OPEN");
         }
 
-        // Dùng wait instance từ BasePage — không tạo mới
         By checkInLocator  = By.cssSelector("[data-selenium-date='" + checkIn  + "']");
         By checkOutLocator = By.cssSelector("[data-selenium-date='" + checkOut + "']");
 
