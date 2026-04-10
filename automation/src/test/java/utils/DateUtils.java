@@ -1,15 +1,13 @@
 package utils;
 
 import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
 
 public class DateUtils {
-    public static String formatDate(LocalDate date) {
-        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
-        return date.format(formatter);
+
+    private DateUtils() {
     }
 
-    public static LocalDate plusDays(int days) {
+    public static LocalDate daysFromNow(int days) {
         return LocalDate.now().plusDays(days);
     }
 }

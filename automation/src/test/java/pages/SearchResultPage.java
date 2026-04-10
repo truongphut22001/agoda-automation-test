@@ -7,64 +7,43 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
-import java.time.Duration;
 import java.util.List;
 
-public class SearchResultPage {
+public class SearchResultPage extends BasePage {
 
-    private final WebDriver driver;
-    private final WebDriverWait wait;
+    private final By occupancyBox = By.cssSelector("[data-element-name='occupancy-box']");
+    private final By hotelItem    = By.cssSelector("[data-selenium='hotel-item']");
+    private final By hotelLink    = By.cssSelector(
+            "li[data-selenium='hotel-item'] a[data-selenium='hotel-name'][data-testid='property-name-link']"
+    );
 
     public SearchResultPage(WebDriver driver, WebDriverWait wait) {
-        this.driver = driver;
-        this.wait = wait;
+        super(driver, wait);
     }
 
     public void waitForSearchPage() {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(20));
-
-        // 1. URL change
         wait.until(ExpectedConditions.urlContains("search"));
-
-        // 2. Page load complete
-        wait.until(d ->
-                ((JavascriptExecutor) d)
-                        .executeScript("return document.readyState")
-                        .equals("complete")
-        );
-
-        // 3. UI ready
-        wait.until(ExpectedConditions.presenceOfElementLocated(
-                By.cssSelector("[data-selenium='hotel-item']")
-        ));
+        wait.until(d -> ((JavascriptExecutor) d)
+                .executeScript("return document.readyState").equals("complete"));
+        waitForVisible(hotelItem);
     }
 
     public void selectFirstHotel() {
-        WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(15));
-        // Handle Occupancy Box
-        By occupancyBox = By.cssSelector("[data-element-name='occupancy-box']");
-
         List<WebElement> boxes = driver.findElements(occupancyBox);
         if (!boxes.isEmpty()) {
-            WebElement box = wait.until(ExpectedConditions.elementToBeClickable(occupancyBox));
-            box.click();
+            click(occupancyBox);
         }
-
-        By hotelLink = By.cssSelector(
-                "li[data-selenium='hotel-item'] a[data-selenium='hotel-name'][data-testid='property-name-link']"
-        );
 
         String originalWindow = driver.getWindowHandle();
         int tabsBefore = driver.getWindowHandles().size();
 
-        WebElement firstHotelLink = wait.until(
-                ExpectedConditions.elementToBeClickable(hotelLink)
-        );
+        WebElement firstHotelLink = waitForClickable(hotelLink);
         ((JavascriptExecutor) driver).executeScript(
                 "arguments[0].scrollIntoView({block: 'center'});", firstHotelLink
         );
         firstHotelLink.click();
 
+        // Chờ tab mới xuất hiện rồi switch sang
         wait.until(d -> d.getWindowHandles().size() > tabsBefore);
         for (String handle : driver.getWindowHandles()) {
             if (!handle.equals(originalWindow)) {

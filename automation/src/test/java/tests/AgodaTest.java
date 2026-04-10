@@ -5,6 +5,7 @@ import org.testng.annotations.Test;
 import pages.HomePage;
 import pages.HotelPage;
 import pages.SearchResultPage;
+import utils.DateUtils;
 
 import java.time.LocalDate;
 
@@ -22,7 +23,7 @@ public class AgodaTest extends BaseTest {
         home.enterHotel(hotelName);
         // 3. Select check-in date = current date + 2
         // 4. Select check-out date = current date + 3
-        home.selectDates(LocalDate.now().plusDays(2), LocalDate.now().plusDays(3));
+        home.selectDates(DateUtils.daysFromNow(2), DateUtils.daysFromNow(3));
         // 5. Set room: 1 room, 4 adults, 2 children
         home.setRoomOptions(1, 4, 2);
         // 6. Click Search
